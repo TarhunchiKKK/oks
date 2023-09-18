@@ -55,22 +55,22 @@ control_frame = ttk.Frame(borderwidth=1, relief=SOLID, padding=[8, 10], width=32
 control_frame.place(relwidth=first_column_width, relheight=second_row_height, relx=0.0, rely=0.71)
 
 control_frame_header = ttk.Label(control_frame, text="Control Window", font=("Arial", 16))
-control_frame_header.grid(row=0, column=0, columnspan=2)
+control_frame_header.pack()
 
 
 
 
 port_label = ttk.Label(control_frame, text="Port number:", font=("Arial", 16))
-port_label.grid(row=1, column=0)
+port_label.place(x=5, y=30)
 port_number_combobox = ttk.Combobox(control_frame, values=port_numbers, state="readonly")
-port_number_combobox.grid(row=1, column=1)
+port_number_combobox.place(x=128, y=35)
 
 
 
 bits_number_label = ttk.Label(control_frame, text="Bits number:", font=("Arial", 16))
-bits_number_label.grid(row=2, column=0)
+bits_number_label.place(x=5, y=60)
 bits_number_combobox = ttk.Combobox(control_frame, values=bit_numbers, state="readonly")
-bits_number_combobox.grid(row=2, column=1)
+bits_number_combobox.place(x=125, y=65)
 
 
 
