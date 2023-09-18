@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-
+from tkinter.scrolledtext import ScrolledText
 
 port_number = 1
 bits_number = 8
@@ -42,12 +42,23 @@ input_frame.place(relwidth=first_column_width, relheight=first_row_height, relx=
 input_frame_header = ttk.Label(input_frame, text="Input Window", font=("Arial", 16))
 input_frame_header.pack()
 
+input_bytes = ScrolledText(input_frame, wrap="char", font=("Arial", 16))
+input_bytes.place(relwidth=0.9, relheight=0.9, relx=0.05, rely=0.1)
+
+
+
+
 
 # окно вывода
 output_frame = ttk.Frame(borderwidth=1, relief=SOLID, padding=[8, 10], width=320, height=500);
 output_frame.place(relwidth=second_column_width,relheight=first_row_height, relx=0.01 + second_column_width, rely=0.0)
 output_frame_header = ttk.Label(output_frame, text="Output Window", font=("Arial", 16))
 output_frame_header.pack()
+
+output_bytes = ScrolledText(output_frame, wrap="char", font=("Arial", 16), state=DISABLED)
+output_bytes.place(relwidth=0.9, relheight=0.9, relx=0.05, rely=0.1)
+
+
 
 
 # окно контроля
@@ -59,18 +70,23 @@ control_frame_header.pack()
 
 
 
-
+# выбор порта
 port_label = ttk.Label(control_frame, text="Port number:", font=("Arial", 16))
-port_label.place(x=5, y=30)
+port_label.place(x=5, y=35)
 port_number_combobox = ttk.Combobox(control_frame, values=port_numbers, state="readonly")
-port_number_combobox.place(x=128, y=35)
+port_number_combobox.place(x=128, y=40)
 
 
-
+# выбор количества бит в байте
 bits_number_label = ttk.Label(control_frame, text="Bits number:", font=("Arial", 16))
-bits_number_label.place(x=5, y=60)
+bits_number_label.place(x=5, y=65)
 bits_number_combobox = ttk.Combobox(control_frame, values=bit_numbers, state="readonly")
-bits_number_combobox.place(x=125, y=65)
+bits_number_combobox.place(x=125, y=70)
+
+
+
+
+
 
 
 
