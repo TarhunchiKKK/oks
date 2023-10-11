@@ -76,7 +76,7 @@ class Ui_PortApp(object):
         self.statusLabel.setObjectName("statusLabel")
 
         self.portNumberLabel = QtWidgets.QLabel(self.centralwidget)
-        self.portNumberLabel.setGeometry(QtCore.QRect(20, 250, 50, 21))
+        self.portNumberLabel.setGeometry(QtCore.QRect(20, 250, 120, 21))
         self.portNumberLabel.setStyleSheet("font-size: 20px;")
         self.portNumberLabel.setObjectName("portNumberLabel")
 
@@ -86,13 +86,14 @@ class Ui_PortApp(object):
         self.bitsNumberLabel.setObjectName("bitsNumberLabel")
 
         self.bitsNumberComboBox = QtWidgets.QComboBox(self.centralwidget)
-        self.bitsNumberComboBox.setGeometry(QtCore.QRect(140, 285, 68, 22))
+        self.bitsNumberComboBox.setGeometry(QtCore.QRect(143, 285, 80, 22))
+        self.bitsNumberComboBox.setStyleSheet("font-size: 20px;")
         self.bitsNumberComboBox.setObjectName("bitsNumberComboBox")
         self.fillBitsNumberComboBox()
 
         self.portNumberComboBox = QtWidgets.QComboBox(self.centralwidget)
-        self.portNumberComboBox.setGeometry(QtCore.QRect(65, 250, 68, 22))
-        self.portNumberComboBox.setStyleSheet("")
+        self.portNumberComboBox.setGeometry(QtCore.QRect(143, 250, 80, 22))
+        self.portNumberComboBox.setStyleSheet("font-size: 20px;")
         self.portNumberComboBox.setObjectName("portNumberComboBox")
         self.fillPortNumberComboBox()
 
@@ -144,7 +145,7 @@ class Ui_PortApp(object):
         self.outputLabel.setText(_translate("PortApp", "Output"))
         self.controlLabel.setText(_translate("PortApp", "Control"))
         self.statusLabel.setText(_translate("PortApp", "Status"))
-        self.portNumberLabel.setText(_translate("PortApp", "Port:"))
+        self.portNumberLabel.setText(_translate("PortApp", "Port number:"))
         self.bitsNumberLabel.setText(_translate("PortApp", "Bits per byte:"))
         self.baudRateLabel.setText(_translate("PortApp", "Baud rate:"))
         self.sentBytesLabel.setText(_translate("PortApp", "Sent bytes:"))
@@ -242,6 +243,7 @@ class Ui_PortApp(object):
             sys.exit(app.exec_())
         else:
             self.outputTextEdit.setText(text.decode())
+            self.baudRateValueLabel.setText(str(self.port.baudRate()))
             
             
     def onChangePort(self, index):
@@ -251,7 +253,11 @@ class Ui_PortApp(object):
         self.fillPortNumberComboBox()
         self.openPort()
 
-        
+
+    def __str__(self):
+        self.port.setFlowControl(QSerialPort.FlowControl.SoftwareControl)
+        self.port.setFlowControl(QSerialPort.FlowControl.HardwareControl)
+        self.port.setFlowControl(QSerialPort.FlowControl.NoFlowControl)
 
 
 
