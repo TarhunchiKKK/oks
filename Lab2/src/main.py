@@ -14,7 +14,7 @@ class BitStaffingMethods:
         return data + (1 - len(data)) * "x"
 
     @staticmethod
-    def getFlag(data: str):
+    def getFlag(data: str) -> str:
         length: int = len(data)
         binaryNumber: str = ""
         while length > 0:
@@ -40,9 +40,8 @@ class BitStaffingMethods:
 
 
     @staticmethod
-    def bitStaffing(data: str) :
+    def bitStaffing(data: str) -> str:
         counter: int = 0
-        newByteIndexes: list[int] = []
         staffed: str = ""
         for i in range(len(data)):
             staffed += data[i]
@@ -50,11 +49,10 @@ class BitStaffingMethods:
                 counter += 1
                 if counter == 7:
                     staffed += "0"
-                    newByteIndexes.append(len(staffed) - 1 + 8)
                     counter = 0
             elif data[i] == "1":
                 counter = 0
-        return (staffed, newByteIndexes)
+        return staffed
 
 
     @staticmethod
@@ -73,6 +71,26 @@ class BitStaffingMethods:
                 destuffed += i
                 counter = 0
         return destuffed
+
+    @staticmethod
+    def getHighlightedBits(data: str) -> str:
+        counter: int = 0
+        highlightedData: str = ""
+        for i in range(len(data)):
+            if data[i] == "0":
+                counter += 1
+            elif data[i] == "1":
+                counter = 0
+
+            if counter == 8:
+                highlightedData += "["
+                highlightedData += data[i]
+                highlightedData += "]"
+                counter = 0
+            else:
+                highlightedData += data[i]
+        return highlightedData
+
 
 
 class Ui_PortApp(object):
@@ -316,38 +334,32 @@ class Ui_PortApp(object):
         data = BitStaffingMethods.getData(data)
         fcs: str = "0"
 
-        result = BitStaffingMethods.bitStaffing(destinationAddress + sourceAddress + data + fcs)
-        staffedData: str = result[0]
-        newByteIndexes: list[int] = result[1]
+        staffedData: str = BitStaffingMethods.bitStaffing(destinationAddress + sourceAddress + data + fcs)
         staffedData = flag + staffedData
         sendedBytesCount: int = len(staffedData)
 
         self.port.write(staffedData.encode())
         self.inputTextEdit.clear()
-
-        highlitedData: str = ""
-        for i in range(len(staffedData)):
-            if i in newByteIndexes:
-                highlitedData += "[" + staffedData[i] + "]"
-            else:
-                highlitedData += staffedData[i]
-        self.statusTextEdit.setText(highlitedData)
-
                 
         self.sentBytesValueLabel.setText(str(sendedBytesCount))
         self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
     def onRecieveBytes(self):
-        data = self.port.readAll().data()
+        data = self.port.readAll().data().decode()
         if len(data) == 0:
             QMessageBox.warning(None, "Error", "Data cannot be read")
             sys.exit(app.exec_())
         else:
-            destaffedData = BitStaffingMethods.debitStaffing(data.decode())
+            highlightedData: str = data[0:8:1] + BitStaffingMethods.getHighlightedBits(data[8::1])
+            self.statusTextEdit.setText(highlightedData)
+
+            destaffedData = BitStaffingMethods.debitStaffing(data)
             destaffedData = destaffedData[8:-1:1]
 
             self.outputTextEdit.setText(destaffedData)
             self.baudRateValueLabel.setText(str(self.port.baudRate()))
+
+
 
     def onChangePort(self, index):
         if self.port.isOpen():

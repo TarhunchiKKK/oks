@@ -1,5 +1,7 @@
 /**/.idea
+/**/.vs
 /**/dist
 /**/build
 /**/main.spec
 /**/vspe-config.vspe
+/Petrunenko/*
