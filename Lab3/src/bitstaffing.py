@@ -75,3 +75,32 @@ def get_highlighted_bits(data: str) -> str:
         else:
             highlightedData += data[i]
     return highlightedData
+
+
+def divide_str(data: str) -> list[str]:
+    if len(data) == 0:
+        return list("x")
+    else:
+        return list(data)
+
+
+def split_on_packages(data: str) -> list[str]:
+    splited: list[str] = []
+    length: int = len(data)
+    step: int = 0
+    if length % 19 == 0:
+        step = 19
+    elif length % 20 == 0:
+        step = 20
+    start: int = 0
+    while start < length:
+        splited.append(data[start:start + step:1])
+        start += step
+    return splited
+
+
+def list_to_str(lst: list[str]) -> str:
+    data: str = ""
+    for i in lst:
+        data += i
+    return data

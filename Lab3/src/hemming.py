@@ -7,10 +7,7 @@ import random
 
 
 def distort_data(data: str) -> str:
-    rand = random.random()
-    print(rand)
-    if rand <= 0.7:
-
+    if random.random() <= 0.7:
         if data[0] == "0":
             return "1" + data[1::1]
         elif data[0] == "1":
@@ -100,7 +97,7 @@ def check(data: str, fcs: str) -> bool:
     data = "x" + data
     fcs_length: int = len(fcs)
 
-    # вставк контроьных битов в строку
+    # вставка контроьных битов в строку
     positions_to_insert: list[int] = get_positions_to_insert(fcs_length)
     data_list: list[str] = list(data)
     for position in positions_to_insert:
@@ -159,12 +156,3 @@ def fix(data: str, fcs: str) -> str:
     return data[1::1]                               # убрать первый символ (символ для выравнивания)
 
 
-
-
-
-
-# print(check("1", "11"))
-# print(check("1", "10"))
-
-# print(fix("0", "11"))
-# print(fix("1", "00"))

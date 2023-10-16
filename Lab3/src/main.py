@@ -3,92 +3,10 @@ from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 
-bitsNumberComboBoxItems: list[str] = ['8 bit', '7 bit', '6 bit', '5 bit']
-
 import hemming
 import bitstaffing
 
-# class BitStaffingMethods:
-#
-#     @staticmethod
-#     def getData(data: str) -> str:
-#         return data + (1 - len(data)) * "x"
-#
-#     @staticmethod
-#     def getFlag(data: str) -> str:
-#         length: int = len(data)
-#         binaryNumber: str = ""
-#         while length > 0:
-#             binaryNumber = str(length % 2) + binaryNumber
-#             length //= 2
-#         return "0" * (8 - len(binaryNumber)) + binaryNumber
-#
-#     @staticmethod
-#     def getSourceAddress(portName: str) -> str:
-#         number: int = 0
-#         for i in range(len(portName)):
-#             if portName[i].isdigit():
-#                 number = int(portName[3::1])
-#                 break
-#
-#         binaryNumber: str = ""
-#         while number > 0:
-#             binaryNumber = str(number % 2) + binaryNumber
-#             number //= 2
-#         length: int = len(binaryNumber)
-#         return "0" * (4 - length) + binaryNumber
-#
-#     @staticmethod
-#     def bitStaffing(data: str) -> str:
-#         counter: int = 0
-#         staffed: str = ""
-#         for i in range(len(data)):
-#             staffed += data[i]
-#             if data[i] == "0":
-#                 counter += 1
-#                 if counter == 7:
-#                     staffed += "0"
-#                     counter = 0
-#             elif data[i] == "1":
-#                 counter = 0
-#         return staffed
-#
-#     @staticmethod
-#     def debitStaffing(data: str) -> str:
-#         data = data[8::1]
-#         counter: int = 0
-#         destuffed: str = ""
-#         for i in data:
-#             if i == "0":
-#                 counter += 1
-#                 if counter != 8:
-#                     destuffed += i
-#                 else:
-#                     counter = 0
-#             elif i == "1" or i == "x":
-#                 destuffed += i
-#                 counter = 0
-#         return destuffed
-#
-#     @staticmethod
-#     def getHighlightedBits(data: str) -> str:
-#         counter: int = 0
-#         highlightedData: str = ""
-#         for i in range(len(data)):
-#             if data[i] == "0":
-#                 counter += 1
-#             elif data[i] == "1":
-#                 counter = 0
-#
-#             if counter == 8:
-#                 highlightedData += "["
-#                 highlightedData += data[i]
-#                 highlightedData += "]"
-#                 counter = 0
-#             else:
-#                 highlightedData += data[i]
-#         return highlightedData
-
+bitsNumberComboBoxItems: list[str] = ['8 bit', '7 bit', '6 bit', '5 bit']
 
 class Ui_PortApp(object):
     def __init__(self, mainWindow):
@@ -304,65 +222,109 @@ class Ui_PortApp(object):
             self.onSendBytes()
         else:
             data: str = self.inputTextEdit.toPlainText()
-            if len(data) == 1:
-                if data[0] != "1" and data[0] != "0":
-                    cursorPosition: int = self.inputTextEdit.textCursor().position()
+            cursorPosition: int = self.inputTextEdit.textCursor().position()
+            for ch in data:
+                if ch != '0' and ch != '1':
+                    data = data.replace(ch, "")
                     cursorPosition -= 1
-                    self.inputTextEdit.setPlainText("")
+                    self.inputTextEdit.clear()
+                    self.inputTextEdit.setPlainText(data)
                     cursor: QTextCursor = self.inputTextEdit.textCursor()
                     cursor.setPosition(cursorPosition)
                     self.inputTextEdit.setTextCursor(cursor)
-            elif len(data) > 1:
-                cursorPosition: int = self.inputTextEdit.textCursor().position()
-                cursorPosition -= 1
-                self.inputTextEdit.setPlainText(data[0:1:1])
-                cursor: QTextCursor = self.inputTextEdit.textCursor()
-                cursor.setPosition(cursorPosition)
-                self.inputTextEdit.setTextCursor(cursor)
+                    break
 
     def onSendBytes(self):
-        data: str = self.inputTextEdit.toPlainText().replace("\n", "")
+        input_data: str = self.inputTextEdit.toPlainText().replace("\n", "")
+        data_list: list[str] = bitstaffing.divide_str(input_data)
+        data_to_send: str = ""
+        for item in data_list:
+            flag: str = "00000001"
+            destinationAddress: str = "0000"
+            sourceAddress: str = bitstaffing.get_source_address(self.port.portName())
+            data: str = bitstaffing.get_data(item)
+            fcs: str = hemming.get_fcs(data)
+            data = hemming.distort_data(data)
 
-        flag: str = "00000001"
-        destinationAddress: str = "0000"
-        sourceAddress: str = bitstaffing.get_source_address(self.port.portName())
-        data = bitstaffing.get_data(data)
-        fcs: str = hemming.get_fcs(data)
-        data = hemming.distort_data(data)
+            staffedData: str = bitstaffing.bit_staffing(destinationAddress + sourceAddress + data + fcs)
+            data_to_send += flag + staffedData
 
-        staffedData: str = bitstaffing.bit_staffing(destinationAddress + sourceAddress + data + fcs)
-        staffedData = flag + staffedData
-        sendedBytesCount: int = len(staffedData)
+        sendedBytesCount: int = len(data_to_send)
 
-        self.port.write(staffedData.encode())
+        self.port.write(data_to_send.encode())
         self.inputTextEdit.clear()
 
         self.sentBytesValueLabel.setText(str(sendedBytesCount))
         self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
+
+
+
+
+
+
+        # data: str = self.inputTextEdit.toPlainText().replace("\n", "")
+        #
+        # flag: str = "00000001"
+        # destinationAddress: str = "0000"
+        # sourceAddress: str = bitstaffing.get_source_address(self.port.portName())
+        # data = bitstaffing.get_data(data)
+        # fcs: str = hemming.get_fcs(data)
+        # data = hemming.distort_data(data)
+        #
+        # staffedData: str = bitstaffing.bit_staffing(destinationAddress + sourceAddress + data + fcs)
+        # staffedData = flag + staffedData
+        # sendedBytesCount: int = len(staffedData)
+        #
+        # self.port.write(staffedData.encode())
+        # self.inputTextEdit.clear()
+        #
+        # self.sentBytesValueLabel.setText(str(sendedBytesCount))
+        # self.baudRateValueLabel.setText(str(self.port.baudRate()))
+
     def onRecieveBytes(self):
-        data = self.port.readAll().data().decode()
-        if len(data) == 0:
+        recieved_data = self.port.readAll().data().decode()
+        if len(recieved_data) == 0:
             QMessageBox.warning(None, "Error", "Data cannot be read")
             sys.exit(app.exec_())
         else:
-            highlightedData: str = data[0:8:1] + bitstaffing.get_highlighted_bits(data[8::1])
-            #self.statusTextEdit.setText(highlightedData)
+            data_list: list[str] = bitstaffing.split_on_packages(recieved_data)
+            data_to_output: str = ""
+            highlightedData: str = ""
+            for data in data_list:
+                highlightedData += data[0:8:1]
+                highlightedData += bitstaffing.get_highlighted_bits(data[8::1])
+                highlightedData += '\n'
 
-            destaffedData = bitstaffing.de_bit_staffing(data)
-            fcs: str = destaffedData[-2::1]
-            destaffedData = destaffedData[8:-2:1]
+                destaffedData = bitstaffing.de_bit_staffing(data)
+                fcs: str = destaffedData[-2::1]
+                destaffedData = destaffedData[8:-2:1]   # извлечь data
+                calculated_fcs: str = hemming.get_fcs(destaffedData)
 
-            calculated_fcs: str = hemming.get_fcs(destaffedData)
-            # if not hemming.check(destaffedData, fcs):
-            #     destaffedData = hemming.fix(destaffedData, calculated_fcs)
+                if fcs != calculated_fcs:
+                    destaffedData = hemming.fix(destaffedData, fcs)
 
-            if fcs != calculated_fcs:
-                destaffedData = hemming.fix(destaffedData, fcs)
-
-            self.outputTextEdit.setText(destaffedData)
-            self.statusTextEdit.setText(highlightedData[0:-2:1] + " " + calculated_fcs)
+                data_to_output += destaffedData
+            self.outputTextEdit.setText(data_to_output)
+            self.statusTextEdit.setText(highlightedData)
             self.baudRateValueLabel.setText(str(self.port.baudRate()))
+
+
+            # highlightedData: str = data[0:8:1] + bitstaffing.get_highlighted_bits(data[8::1])
+            # #self.statusTextEdit.setText(highlightedData)
+            #
+            # destaffedData = bitstaffing.de_bit_staffing(data)
+            # fcs: str = destaffedData[-2::1]
+            # destaffedData = destaffedData[8:-2:1]
+            #
+            # calculated_fcs: str = hemming.get_fcs(destaffedData)
+            #
+            # if fcs != calculated_fcs:
+            #     destaffedData = hemming.fix(destaffedData, fcs)
+            #
+            # self.outputTextEdit.setText(destaffedData)
+            # self.statusTextEdit.setText(highlightedData[0:-2:1] + " " + calculated_fcs)
+            # self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
     def onChangePort(self, index):
         if self.port.isOpen():

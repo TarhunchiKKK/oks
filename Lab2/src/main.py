@@ -91,6 +91,34 @@ class BitStaffingMethods:
                 highlightedData += data[i]
         return highlightedData
 
+    @staticmethod
+    def divide_str(data: str, n: int = 1) -> list[str]:
+        if len(data) == 0:
+            return list("x")
+        else:
+            return list(data)
+    @staticmethod
+    def split_on_packages(data: str) -> list[str]:
+        splited: list[str] = []
+        length: int = len(data)
+        step: int = 0
+        if length % 18 == 0:
+            step = 18
+        elif length % 19 == 0:
+            step = 19
+        start: int = 0
+        while start < length:
+            splited.append(data[start:start + step:1])
+            start += step
+        return splited
+
+    @staticmethod
+    def list_to_str(lst: list[str]) -> str:
+        data: str = ""
+        for i in lst:
+            data += i
+        return data
+
 
 
 class Ui_PortApp(object):
@@ -307,56 +335,62 @@ class Ui_PortApp(object):
             self.onSendBytes()
         else:
             data: str = self.inputTextEdit.toPlainText()
-            if len(data) == 1:
-                if data[0] != "1" and data[0] != "0":
-                    cursorPosition: int = self.inputTextEdit.textCursor().position()
+            cursorPosition: int = self.inputTextEdit.textCursor().position()
+            for ch in data:
+                if ch != '0' and ch != '1':
+                    data = data.replace(ch, "")
                     cursorPosition -= 1
-                    self.inputTextEdit.setPlainText("")
+                    self.inputTextEdit.clear()
+                    self.inputTextEdit.setPlainText(data)
                     cursor: QTextCursor = self.inputTextEdit.textCursor()
                     cursor.setPosition(cursorPosition)
                     self.inputTextEdit.setTextCursor(cursor)
-            elif len(data) > 1:
-                cursorPosition: int = self.inputTextEdit.textCursor().position()
-                cursorPosition -= 1
-                self.inputTextEdit.setPlainText(data[0:1:1])
-                cursor: QTextCursor = self.inputTextEdit.textCursor()
-                cursor.setPosition(cursorPosition)
-                self.inputTextEdit.setTextCursor(cursor)
+                    break
+
 
 
     def onSendBytes(self):
-        # data: str = self.inputTextEdit.toPlainText()[:-1:]
-        data: str = self.inputTextEdit.toPlainText().replace("\n", "")
+        input_data: str = self.inputTextEdit.toPlainText().replace("\n", "")
+        data_list: list[str] = BitStaffingMethods.divide_str(input_data)
+        data_to_send: str = ""
+        for item in data_list:
+            flag: str = "00000001"
+            destinationAddress: str = "0000"
+            sourceAddress: str = BitStaffingMethods.getSourceAddress(self.port.portName())
+            data: str = BitStaffingMethods.getData(item)
+            fcs: str = "0"
 
-        flag: str = "00000001"
-        destinationAddress: str = "0000"
-        sourceAddress: str = BitStaffingMethods.getSourceAddress(self.port.portName())
-        data = BitStaffingMethods.getData(data)
-        fcs: str = "0"
+            staffedData: str = BitStaffingMethods.bitStaffing(destinationAddress + sourceAddress + data + fcs)
+            data_to_send += flag + staffedData
 
-        staffedData: str = BitStaffingMethods.bitStaffing(destinationAddress + sourceAddress + data + fcs)
-        staffedData = flag + staffedData
-        sendedBytesCount: int = len(staffedData)
+        sendedBytesCount: int = len(data_to_send)
 
-        self.port.write(staffedData.encode())
+        self.port.write(data_to_send.encode())
         self.inputTextEdit.clear()
-                
+
         self.sentBytesValueLabel.setText(str(sendedBytesCount))
         self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
+
     def onRecieveBytes(self):
-        data = self.port.readAll().data().decode()
-        if len(data) == 0:
+        recieved_data = self.port.readAll().data().decode()
+        if len(recieved_data) == 0:
             QMessageBox.warning(None, "Error", "Data cannot be read")
             sys.exit(app.exec_())
         else:
-            highlightedData: str = data[0:8:1] + BitStaffingMethods.getHighlightedBits(data[8::1])
+            data_list: list[str] = BitStaffingMethods.split_on_packages(recieved_data)
+            data_to_output: str = ""
+            highlightedData: str = ""
+            for data in data_list:
+                highlightedData += data[0:8:1]
+                highlightedData += BitStaffingMethods.getHighlightedBits(data[8::1])
+                highlightedData += '\n'
+
+                destaffedData = BitStaffingMethods.debitStaffing(data)
+                destaffedData = destaffedData[8:-1:1]
+                data_to_output += destaffedData
+            self.outputTextEdit.setText(data_to_output)
             self.statusTextEdit.setText(highlightedData)
-
-            destaffedData = BitStaffingMethods.debitStaffing(data)
-            destaffedData = destaffedData[8:-1:1]
-
-            self.outputTextEdit.setText(destaffedData)
             self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
 
