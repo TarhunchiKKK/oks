@@ -57,7 +57,7 @@ class BitStaffingMethods:
 
     @staticmethod
     def debitStaffing(data: str) -> str:
-        data = data[8::1]
+        # data = data[8::1]
         counter: int = 0
         destuffed: str = ""
         for i in data:
@@ -386,7 +386,7 @@ class Ui_PortApp(object):
                 highlightedData += BitStaffingMethods.getHighlightedBits(data[8::1])
                 highlightedData += '\n'
 
-                destaffedData = BitStaffingMethods.debitStaffing(data)
+                destaffedData = BitStaffingMethods.debitStaffing(data[8::1])
                 destaffedData = destaffedData[8:-1:1]
                 data_to_output += destaffedData
             self.outputTextEdit.setText(data_to_output)

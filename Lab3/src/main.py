@@ -154,19 +154,19 @@ class Ui_PortApp(object):
         self.sentBytesLabel.setText(_translate("PortApp", "Sent bytes:"))
 
     def fillPortNumberComboBox(self):
-        availablePorts: list[QSerialPortInfo] = QSerialPortInfo.availablePorts()
-        currentPort: str = self.portNumberComboBox.currentText()
-        if availablePorts:
+        available_ports: list[QSerialPortInfo] = QSerialPortInfo.availablePorts()
+        current_port: str = self.portNumberComboBox.currentText()
+        if available_ports:
             self.portNumberComboBox.blockSignals(True)
             self.portNumberComboBox.clear()
 
-            for availablePort in availablePorts:
+            for availablePort in available_ports:
                 self.portNumberComboBox.addItem(availablePort.portName())
 
-            currentIndex: int = self.portNumberComboBox.findText(currentPort)
+            current_index: int = self.portNumberComboBox.findText(current_port)
 
-            if currentIndex != -1:
-                self.portNumberComboBox.setCurrentIndex(currentIndex)
+            if current_index != -1:
+                self.portNumberComboBox.setCurrentIndex(current_index)
 
             self.portNumberComboBox.blockSignals(False)
         else:
@@ -182,20 +182,20 @@ class Ui_PortApp(object):
         if not self.port.isOpen():
             self.configurePort()
             if not self.tryOpenPort(self.port.portName()):
-                availablePorts: list[QSerialPortInfo] = QSerialPortInfo.availablePorts()
-                for availablePort in availablePorts:
-                    if self.tryOpenPort(availablePort.portName()):
-                        self.portNumberComboBox.setCurrentText(availablePort.portName())
-                        self.port.setPortName(availablePort.portName())
+                available_ports: list[QSerialPortInfo] = QSerialPortInfo.availablePorts()
+                for port in available_ports:
+                    if self.tryOpenPort(port.portName()):
+                        self.portNumberComboBox.setCurrentText(port.portName())
+                        self.port.setPortName(port.portName())
                         break
                 else:
                     QMessageBox.warning(None, "Error", "No available COM-Ports found")
                     sys.exit(app.exec_())
             self.port.open(QtCore.QIODevice.ReadWrite)
 
-    def tryOpenPort(self, portName: str) -> bool:
+    def tryOpenPort(self, port_name: str) -> bool:
         port: QSerialPort = QSerialPort()
-        port.setPortName(portName)
+        port.setPortName(port_name)
         if port.open(QtCore.QIODevice.ReadWrite):
             port.close()
             return True
@@ -203,14 +203,14 @@ class Ui_PortApp(object):
             return False
 
     def configurePort(self):
-        portName: str = self.portNumberComboBox.currentText()
-        self.port.setPortName(portName)
+        port_name: str = self.portNumberComboBox.currentText()
+        self.port.setPortName(port_name)
 
-        baudRate: int = 9600
-        self.port.setBaudRate(baudRate)
+        baud_rate: int = 9600
+        self.port.setBaudRate(baud_rate)
 
-        dataBits: int = int(self.bitsNumberComboBox.currentText()[0])
-        self.port.setDataBits(dataBits)
+        data_bits: int = int(self.bitsNumberComboBox.currentText()[0])
+        self.port.setDataBits(data_bits)
 
         self.port.setParity(QSerialPort.Parity.NoParity)
         self.port.setStopBits(QSerialPort.StopBits.OneStop)
@@ -222,15 +222,15 @@ class Ui_PortApp(object):
             self.onSendBytes()
         else:
             data: str = self.inputTextEdit.toPlainText()
-            cursorPosition: int = self.inputTextEdit.textCursor().position()
+            cursor_position: int = self.inputTextEdit.textCursor().position()
             for ch in data:
                 if ch != '0' and ch != '1':
                     data = data.replace(ch, "")
-                    cursorPosition -= 1
+                    cursor_position -= 1
                     self.inputTextEdit.clear()
                     self.inputTextEdit.setPlainText(data)
                     cursor: QTextCursor = self.inputTextEdit.textCursor()
-                    cursor.setPosition(cursorPosition)
+                    cursor.setPosition(cursor_position)
                     self.inputTextEdit.setTextCursor(cursor)
                     break
 
@@ -240,21 +240,21 @@ class Ui_PortApp(object):
         data_to_send: str = ""
         for item in data_list:
             flag: str = "00000001"
-            destinationAddress: str = "0000"
-            sourceAddress: str = bitstaffing.get_source_address(self.port.portName())
+            destination_address: str = "0000"
+            source_address: str = bitstaffing.get_source_address(self.port.portName())
             data: str = bitstaffing.get_data(item)
             fcs: str = hemming.get_fcs(data)
             data = hemming.distort_data(data)
 
-            staffedData: str = bitstaffing.bit_staffing(destinationAddress + sourceAddress + data + fcs)
-            data_to_send += flag + staffedData
+            staffed_data: str = bitstaffing.bit_staffing(destination_address + source_address + data + fcs)
+            data_to_send += flag + staffed_data
 
-        sendedBytesCount: int = len(data_to_send)
+        sended_bytes_count: int = len(data_to_send)
 
         self.port.write(data_to_send.encode())
         self.inputTextEdit.clear()
 
-        self.sentBytesValueLabel.setText(str(sendedBytesCount))
+        self.sentBytesValueLabel.setText(str(sended_bytes_count))
         self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
 
@@ -266,23 +266,23 @@ class Ui_PortApp(object):
         else:
             data_list: list[str] = bitstaffing.split_on_packages(recieved_data)
             data_to_output: str = ""
-            highlightedData: str = ""
+            highlighted_data: str = ""
             for data in data_list:
-                highlightedData += data[0:8:1]
-                highlightedData += bitstaffing.get_highlighted_bits(data[8::1])
-                highlightedData += '\n'
+                highlighted_data += data[0:8:1]
+                highlighted_data += bitstaffing.get_highlighted_bits(data[8::1])
+                highlighted_data += '\n'
 
-                destaffedData = bitstaffing.de_bit_staffing(data)
-                fcs: str = destaffedData[-2::1]
-                destaffedData = destaffedData[8:-2:1]   # извлечь data
-                calculated_fcs: str = hemming.get_fcs(destaffedData)
+                destaffed_data = bitstaffing.de_bit_staffing(data[8::1])
+                fcs: str = destaffed_data[-2::1]
+                destaffed_data = destaffed_data[8:-2:1]   # извлечь data
+                calculated_fcs: str = hemming.get_fcs(destaffed_data)
 
                 if fcs != calculated_fcs:
-                    destaffedData = hemming.fix(destaffedData, fcs)
+                    destaffed_data = hemming.fix(destaffed_data, fcs)
 
-                data_to_output += destaffedData
+                data_to_output += destaffed_data
             self.outputTextEdit.setText(data_to_output)
-            self.statusTextEdit.setText(highlightedData)
+            self.statusTextEdit.setText(highlighted_data)
             self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
 

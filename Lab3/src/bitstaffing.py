@@ -4,26 +4,26 @@ def get_data(data: str) -> str:
 
 def get_flag(data: str) -> str:
     length: int = len(data)
-    binaryNumber: str = ""
+    binary_number: str = ""
     while length > 0:
-        binaryNumber = str(length % 2) + binaryNumber
+        binary_number = str(length % 2) + binary_number
         length //= 2
-    return "0" * (8 - len(binaryNumber)) + binaryNumber
+    return "0" * (8 - len(binary_number)) + binary_number
 
 
-def get_source_address(portName: str) -> str:
+def get_source_address(port_name: str) -> str:
     number: int = 0
-    for i in range(len(portName)):
-        if portName[i].isdigit():
-            number = int(portName[3::1])
+    for i in range(len(port_name)):
+        if port_name[i].isdigit():
+            number = int(port_name[3::1])
             break
 
-    binaryNumber: str = ""
+    binary_number: str = ""
     while number > 0:
-        binaryNumber = str(number % 2) + binaryNumber
+        binary_number = str(number % 2) + binary_number
         number //= 2
-    length: int = len(binaryNumber)
-    return "0" * (4 - length) + binaryNumber
+    length: int = len(binary_number)
+    return "0" * (4 - length) + binary_number
 
 
 def bit_staffing(data: str) -> str:
@@ -42,7 +42,7 @@ def bit_staffing(data: str) -> str:
 
 
 def de_bit_staffing(data: str) -> str:
-    data = data[8::1]
+    # data = data[8::1]
     counter: int = 0
     destuffed: str = ""
     for i in data:
@@ -60,7 +60,7 @@ def de_bit_staffing(data: str) -> str:
 
 def get_highlighted_bits(data: str) -> str:
     counter: int = 0
-    highlightedData: str = ""
+    highlighted_data: str = ""
     for i in range(len(data)):
         if data[i] == "0":
             counter += 1
@@ -68,13 +68,13 @@ def get_highlighted_bits(data: str) -> str:
             counter = 0
 
         if counter == 8:
-            highlightedData += "["
-            highlightedData += data[i]
-            highlightedData += "]"
+            highlighted_data += "["
+            highlighted_data += data[i]
+            highlighted_data += "]"
             counter = 0
         else:
-            highlightedData += data[i]
-    return highlightedData[0:-2:1] + ' ' + data[-2::1]
+            highlighted_data += data[i]
+    return highlighted_data[0:-2:1] + ' ' + data[-2::1]
 
 
 def divide_str(data: str) -> list[str]:
