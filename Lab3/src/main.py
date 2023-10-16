@@ -258,30 +258,6 @@ class Ui_PortApp(object):
         self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
 
-
-
-
-
-
-        # data: str = self.inputTextEdit.toPlainText().replace("\n", "")
-        #
-        # flag: str = "00000001"
-        # destinationAddress: str = "0000"
-        # sourceAddress: str = bitstaffing.get_source_address(self.port.portName())
-        # data = bitstaffing.get_data(data)
-        # fcs: str = hemming.get_fcs(data)
-        # data = hemming.distort_data(data)
-        #
-        # staffedData: str = bitstaffing.bit_staffing(destinationAddress + sourceAddress + data + fcs)
-        # staffedData = flag + staffedData
-        # sendedBytesCount: int = len(staffedData)
-        #
-        # self.port.write(staffedData.encode())
-        # self.inputTextEdit.clear()
-        #
-        # self.sentBytesValueLabel.setText(str(sendedBytesCount))
-        # self.baudRateValueLabel.setText(str(self.port.baudRate()))
-
     def onRecieveBytes(self):
         recieved_data = self.port.readAll().data().decode()
         if len(recieved_data) == 0:
@@ -309,22 +285,6 @@ class Ui_PortApp(object):
             self.statusTextEdit.setText(highlightedData)
             self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
-
-            # highlightedData: str = data[0:8:1] + bitstaffing.get_highlighted_bits(data[8::1])
-            # #self.statusTextEdit.setText(highlightedData)
-            #
-            # destaffedData = bitstaffing.de_bit_staffing(data)
-            # fcs: str = destaffedData[-2::1]
-            # destaffedData = destaffedData[8:-2:1]
-            #
-            # calculated_fcs: str = hemming.get_fcs(destaffedData)
-            #
-            # if fcs != calculated_fcs:
-            #     destaffedData = hemming.fix(destaffedData, fcs)
-            #
-            # self.outputTextEdit.setText(destaffedData)
-            # self.statusTextEdit.setText(highlightedData[0:-2:1] + " " + calculated_fcs)
-            # self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
     def onChangePort(self, index):
         if self.port.isOpen():
