@@ -1,9 +1,8 @@
 /**/.idea
 /**/.vs
-/**/__pycache__/*
+/**/__pycache__
 /**/dist
 /**/build
 /**/Lab*.pdf
 /**/main.spec
 /**/vspe-config.vspe
-/test/*
