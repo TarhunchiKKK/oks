@@ -1,6 +1,8 @@
 import math
 import random
 import time
+from PyQt5 import QtWidgets
+from PyQt5.QtSerialPort import QSerialPort
 
 collision_window_backoff: float = 0.05
 max_counter: int = 16
@@ -60,3 +62,73 @@ def get_highlighted_data(data: str) -> str:
         highlighted_data += highlighted_bit + ' '
 
     return highlighted_data + '\n\n'
+
+
+def send(data: str, append_status) -> str:
+    data_to_send: str = ''
+    for ch in data:
+        while not is_port_free():
+            pass
+
+        counter: int = 0
+
+        data_to_send += ch
+
+        wait_collision_window()
+        while True:
+            if has_collision():
+                #data_to_send += ch
+                append_status('+')
+                QtWidgets.QApplication.processEvents()
+
+                counter += 1
+                if counter < max_counter:
+                    make_backoff(counter)
+                else:
+                    break
+            else:
+                append_status('-')
+                QtWidgets.QApplication.processEvents()
+                break
+        append_status(' ')
+        QtWidgets.QApplication.processEvents()
+
+    append_status('\n\n')
+    QtWidgets.QApplication.processEvents()
+
+    return data_to_send
+
+
+def send_with_collisions(data: str) -> (str, str):
+    data_to_send: str = ""
+    highlighted_data: str = ""
+    for ch in data:
+        while not is_port_free():
+            pass
+
+        counter: int = 0
+        highlighted_bit: str = ""
+
+        # port.write(ch.encode())
+        data_to_send += ch
+        
+        wait_collision_window()
+        while True:
+            if has_collision():
+                
+                # port.write(ch.encode())
+                data_to_send += ch
+                
+                highlighted_bit += '+'
+                counter += 1
+                if counter < max_counter:
+                    make_backoff(counter)
+                else:
+                    break
+            else:
+                highlighted_bit += '-'
+                break
+
+        highlighted_data += highlighted_bit + ' '
+
+    return (data_to_send, highlighted_data + '\n\n')

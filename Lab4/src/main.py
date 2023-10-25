@@ -245,7 +245,11 @@ class Ui_PortApp(object):
         input_data: str = self.inputTextEdit.toPlainText().replace("\n", "")
         data_list: list[str] = bitstaffing.divide_str(input_data)
         data_to_send: str = ""
-        highlighted_data: str = ""
+
+        self.inputTextEdit.clear()
+        self.sendedBytesTextEdit.clear()
+        QtWidgets.QApplication.processEvents()
+
         for item in data_list:
             flag: str = "00000001"
             destination_address: str = "0000"
@@ -256,20 +260,23 @@ class Ui_PortApp(object):
 
             staffed_data: str = bitstaffing.bit_staffing(destination_address + source_address + data + fcs)
 
-            highlighted_data += csma_cd.get_highlighted_data(flag + staffed_data)
-            data_to_send += flag + staffed_data
+            data_to_send += csma_cd.send(flag + staffed_data, self.get_append_status())
+
+            # csma_cd.send(flag + staffed_data , self.get_append_status())
+            # data_to_send += flag + staffed_data
+
+
 
         sended_bytes_count: int = len(data_to_send)
         
         self.inputTextEdit.clear()
-        self.sendedBytesTextEdit.clear()
 
         self.port.write(data_to_send.encode())
 
         self.sentBytesValueLabel.setText(str(sended_bytes_count))
         self.baudRateValueLabel.setText(str(self.port.baudRate()))
-        self.sendedBytesTextEdit.setText(highlighted_data)
         
+
         
 
 
@@ -300,13 +307,27 @@ class Ui_PortApp(object):
             self.statusTextEdit.setText(highlighted_data)
             self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
-
     def onChangePort(self, index):
         if self.port.isOpen():
             self.port.close()
         self.fillBitsNumberComboBox()
         self.fillPortNumberComboBox()
         self.openPort()
+        
+    def get_append_status(self):
+        textEdit: QtWidgets.QTextEdit = self.sendedBytesTextEdit
+        def closure(symbol: str):
+            status: str = textEdit.toPlainText()
+            status += symbol
+            textEdit.setText(status)
+        return closure
+
+    def append_status(self, symbol: str):
+        status: str = self.sendedBytesTextEdit.toPlainText()
+        status += symbol
+        self.sendedBytesTextEdit.setPlainText(status)
+
+        
 
 
 if __name__ == "__main__":
