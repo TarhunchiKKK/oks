@@ -270,12 +270,13 @@ class Ui_PortApp(object):
             for data in data_list:
                 highlighted_data += data[0:8:1]
                 highlighted_data += bitstaffing.get_highlighted_bits(data[8::1])
-                highlighted_data += '\n'
+                # highlighted_data += '\n'
 
                 destaffed_data = bitstaffing.de_bit_staffing(data[8::1])
                 fcs: str = destaffed_data[-2::1]
                 destaffed_data = destaffed_data[8:-2:1]   # извлечь data
                 calculated_fcs: str = hemming.get_fcs(destaffed_data)
+                highlighted_data += calculated_fcs + '\n'
 
                 if fcs != calculated_fcs:
                     destaffed_data = hemming.fix(destaffed_data, fcs)

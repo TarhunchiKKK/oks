@@ -74,7 +74,7 @@ def get_highlighted_bits(data: str) -> str:
             counter = 0
         else:
             highlighted_data += data[i]
-    return highlighted_data[0:-2:1] + ' ' + data[-2::1]
+    return highlighted_data[0:-2:1] + ' '# + data[-2::1]
 
 
 def divide_str(data: str) -> list[str]:

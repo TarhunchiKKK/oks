@@ -44,7 +44,6 @@ def bit_staffing(data: str) -> str:
 
 
 def de_bit_staffing(data: str) -> str:
-    # data = data[8::1]
     counter: int = 0
     destuffed: str = ""
     for i in data:
@@ -58,7 +57,7 @@ def de_bit_staffing(data: str) -> str:
             destuffed += i
             counter = 0
     return destuffed
-
+    # return data.replace('000000001', '00000001')
 
 def get_highlighted_bits(data: str) -> str:
     counter: int = 0
@@ -87,18 +86,49 @@ def divide_str(data: str) -> list[str]:
 
 
 def split_on_packages(data: str) -> list[str]:
+    # splited: list[str] = []
+    # length: int = len(data)
+    # step: int = 0
+    #
+    # if length % 20 == 0:
+    #     step = 20
+    # else:
+    #     step = 19
+    # start: int = 0
+    # while start < length:
+    #     if start + step:
+    #         splited.append(data[start::1])
+    #         break
+    #     splited.append(data[start:start + step:1])
+    #     start += step
+    # return splited
+
     splited: list[str] = []
     length: int = len(data)
-    step: int = 0
-    if length % 19 == 0:
-        step = 19
-    elif length % 20 == 0:
-        step = 20
+    step: int = 8
+
     start: int = 0
-    while start < length:
-        splited.append(data[start:start + step:1])
-        start += step
+    while True:
+        position: int = data.find('00000001', start)
+        if position == -1:
+            break
+
+        start = position
+        end: int = data.find('00000001', start + step * 2)
+        if end == -1:
+            splited.append(data[start::1])
+            break
+
+        if end >= length:
+            break
+
+        splited.append(data[start:end:1])
+
+        start = end
+
     return splited
+
+
 
 
 def list_to_str(lst: list[str]) -> str:
@@ -106,3 +136,11 @@ def list_to_str(lst: list[str]) -> str:
     for i in lst:
         data += i
     return data
+
+
+
+# lst: list[str] = split_on_packages("00010001000001001111")
+#
+# # lst: list[str] = split_on_packages("00000001000000001111")
+# for l in lst:
+#     print(l)

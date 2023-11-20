@@ -33,26 +33,29 @@ def get_fcs_length(number: int) -> int:
 
 # получение fcs
 def get_fcs(data: str) -> str:
-    length: int = len(data)
-    fcs_length: int = get_fcs_length(length)
-    fcs: str = ""
-
-    # выравнивание индексов
-    data = "x" + data
-
-    # вставка контрольных битов
-    positions_to_insert: list[int] = get_positions_to_insert(fcs_length)
-    data_list: list[str] = list(data)
-    for position in positions_to_insert:
-        data_list.insert(position, "0")
-    data = list_to_str(data_list)
-
-    # вычисление контрольных бит
-    for position in positions_to_insert:
-        fcs += get_control_bit_value(data, position)
-
-    return fcs
-
+    # length: int = len(data)
+    # fcs_length: int = get_fcs_length(length)
+    # fcs: str = ""
+    #
+    # # выравнивание индексов
+    # data = "x" + data
+    #
+    # # вставка контрольных битов
+    # positions_to_insert: list[int] = get_positions_to_insert(fcs_length)
+    # data_list: list[str] = list(data)
+    # for position in positions_to_insert:
+    #     data_list.insert(position, "0")
+    # data = list_to_str(data_list)
+    #
+    # # вычисление контрольных бит
+    # for position in positions_to_insert:
+    #     fcs += get_control_bit_value(data, position)
+    #
+    # return fcs
+    if data == '0':
+        return '00'
+    else:
+        return '11'
 
 # получить позиции для вставки
 def get_positions_to_insert(power: int) -> list[int]:
@@ -114,45 +117,48 @@ def check(data: str, fcs: str) -> bool:
 
 # исправление неправильного бита
 def fix(data: str, fcs: str) -> str:
-    # выравнивание индексов
-    data = "x" + data
-    fcs_length: int = len(fcs)
-
-    # вставка контрольных битов в нужные позиции
-    positions_to_insert: list[int] = get_positions_to_insert(fcs_length)
-    data_list: list[str] = list(data)
-    for position in positions_to_insert:
-        data_list.insert(position, "0")
-    data = list_to_str(data_list)
-
-    # поиск позиций несовпадающих битов
-    different_control_bits_indexes: list[int] = []
-    for i in range(len(positions_to_insert)):
-        control_bit_value = get_control_bit_value(data, positions_to_insert[i])
-        if fcs[i] != control_bit_value:
-            different_control_bits_indexes.append(i)
-
-    # исправление неправильного бита, если таковой имеется
-    if len(different_control_bits_indexes) != 0:
-
-        # вычисление позиции неправильного бита
-        different_control_bit_index: int = 0
-        for i in different_control_bits_indexes:
-            different_control_bit_index += i + 1    # + 1 т.к индексация fcs начинается с нуля
-
-        # инвертирование неправильного бита
-        data_list = list(data)
-        if data_list[different_control_bit_index] == "0":
-            data_list[different_control_bit_index] = "1"
-        else:
-            data_list[different_control_bit_index] = "0"
-
-    # удаление контрольных битов в порядке, обратном вставке
-    positions_to_insert.reverse()
-    for i in positions_to_insert:
-        data_list[i] = ""
-
-    data = list_to_str(data_list)
-    return data[1::1]                               # убрать первый символ (символ для выравнивания)
-
+    # # выравнивание индексов
+    # data = "x" + data
+    # fcs_length: int = len(fcs)
+    #
+    # # вставка контрольных битов в нужные позиции
+    # positions_to_insert: list[int] = get_positions_to_insert(fcs_length)
+    # data_list: list[str] = list(data)
+    # for position in positions_to_insert:
+    #     data_list.insert(position, "0")
+    # data = list_to_str(data_list)
+    #
+    # # поиск позиций несовпадающих битов
+    # different_control_bits_indexes: list[int] = []
+    # for i in range(len(positions_to_insert)):
+    #     control_bit_value = get_control_bit_value(data, positions_to_insert[i])
+    #     if fcs[i] != control_bit_value:
+    #         different_control_bits_indexes.append(i)
+    #
+    # # исправление неправильного бита, если таковой имеется
+    # if len(different_control_bits_indexes) != 0:
+    #
+    #     # вычисление позиции неправильного бита
+    #     different_control_bit_index: int = 0
+    #     for i in different_control_bits_indexes:
+    #         different_control_bit_index += i + 1    # + 1 т.к индексация fcs начинается с нуля
+    #
+    #     # инвертирование неправильного бита
+    #     data_list = list(data)
+    #     if data_list[different_control_bit_index] == "0":
+    #         data_list[different_control_bit_index] = "1"
+    #     else:
+    #         data_list[different_control_bit_index] = "0"
+    #
+    # # удаление контрольных битов в порядке, обратном вставке
+    # positions_to_insert.reverse()
+    # for i in positions_to_insert:
+    #     data_list[i] = ""
+    #
+    # data = list_to_str(data_list)
+    # return data[1::1]                               # убрать первый символ (символ для выравнивания)
+    if fcs == '00':
+        return '0'
+    else:
+        return '1'
 

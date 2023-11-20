@@ -100,7 +100,7 @@ class Ui_PortApp(object):
         self.fillPortNumberComboBox()
 
         self.baudRateLabel = QtWidgets.QLabel(self.centralwidget)
-        self.baudRateLabel.setGeometry(QtCore.QRect(370, 390, 101, 21))
+        self.baudRateLabel.setGeometry(QtCore.QRect(370, 390, 120, 21))
         self.baudRateLabel.setStyleSheet("font-size: 20px;")
         self.baudRateLabel.setObjectName("baudRateLabel")
 
@@ -248,6 +248,7 @@ class Ui_PortApp(object):
 
         self.inputTextEdit.clear()
         self.sendedBytesTextEdit.clear()
+        self.baudRateValueLabel.setText(str(self.port.baudRate()))
         QtWidgets.QApplication.processEvents()
 
         for item in data_list:
@@ -274,37 +275,48 @@ class Ui_PortApp(object):
         self.port.write(data_to_send.encode())
 
         self.sentBytesValueLabel.setText(str(sended_bytes_count))
-        self.baudRateValueLabel.setText(str(self.port.baudRate()))
-        
+
 
         
 
 
     def onRecieveBytes(self):
-        recieved_data = self.port.readAll().data().decode()
-        if len(recieved_data) == 0:
-            QMessageBox.warning(None, "Error", "Data cannot be read")
-            sys.exit(app.exec_())
-        else:
-            data_list: list[str] = bitstaffing.split_on_packages(recieved_data)
-            data_to_output: str = ""
-            highlighted_data: str = ""
-            for data in data_list:
-                highlighted_data += data[0:8:1]
-                highlighted_data += bitstaffing.get_highlighted_bits(data[8::1])
-                highlighted_data += '\n'
+        try:
+            recieved_data = self.port.readAll().data().decode()
 
-                destaffed_data = bitstaffing.de_bit_staffing(data[8::1])
-                fcs: str = destaffed_data[-2::1]
-                destaffed_data = destaffed_data[8:-2:1]   # извлечь data
-                calculated_fcs: str = hemming.get_fcs(destaffed_data)
+            print("Recieved data length: " + str(len(recieved_data)))
+            print("Port buffer size: " + str(self.port.size()))
 
-                if fcs != calculated_fcs:
-                    destaffed_data = hemming.fix(destaffed_data, fcs)
+            if len(recieved_data) == 0:
+                QMessageBox.warning(None, "Error", "Data cannot be read")
+                sys.exit(app.exec_())
+            else:
+                data_list: list[str] = bitstaffing.split_on_packages(recieved_data)
+                data_to_output: str = ""
+                highlighted_data: str = ""
+                for data in data_list:
+                    highlighted_data += data[0:8:1]
+                    highlighted_data += bitstaffing.get_highlighted_bits(data[8::1])
+                    highlighted_data += '\n'
 
-                data_to_output += destaffed_data
-            self.outputTextEdit.setText(data_to_output)
-            self.statusTextEdit.setText(highlighted_data)
+                    print("Highlighted data length: " + str(len(highlighted_data)))
+
+                    destaffed_data = bitstaffing.de_bit_staffing(data[8::1])
+                    fcs: str = destaffed_data[-2::1]
+                    destaffed_data = destaffed_data[8:-2:1]   # извлечь data
+                    calculated_fcs: str = hemming.get_fcs(destaffed_data)
+
+                    if fcs != calculated_fcs:
+                        destaffed_data = hemming.fix(destaffed_data, fcs)
+
+                    data_to_output += destaffed_data
+                    print("data to output length: " + str(len(data_to_output)))
+                self.outputTextEdit.setText(data_to_output)
+                self.statusTextEdit.setText(highlighted_data)
+        except BaseException as e:
+            print(e)
+            self.outputTextEdit.clear()
+        finally:
             self.baudRateValueLabel.setText(str(self.port.baudRate()))
 
     def onChangePort(self, index):

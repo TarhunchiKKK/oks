@@ -4,7 +4,7 @@ import time
 from PyQt5 import QtWidgets
 from PyQt5.QtSerialPort import QSerialPort
 
-collision_window_backoff: float = 0.05
+collision_window_backoff: float = 0.04# 0.1
 max_counter: int = 16
 
 def get_backoff(n: int) -> float:
@@ -16,7 +16,7 @@ def get_backoff(n: int) -> float:
 
 def make_backoff(n: int) -> None:
     backoff: float = get_backoff(n)
-    time.sleep(backoff / 2000)
+    time.sleep(backoff / 100)# 10)
 
 
 def is_port_free() -> bool:
@@ -67,17 +67,26 @@ def get_highlighted_data(data: str) -> str:
 def send(data: str, append_status) -> str:
     data_to_send: str = ''
     for ch in data:
-        while not is_port_free():
-            pass
+        # while not is_port_free():
+        #     pass
+        #
+        # counter: int = 0
+        #
+        # data_to_send += ch
 
-        counter: int = 0
-
-        data_to_send += ch
-
-        wait_collision_window()
+        # wait_collision_window()
         while True:
+
+            while not is_port_free():
+                pass
+
+            counter: int = 0
+
+            data_to_send += ch
+            wait_collision_window()
+
             if has_collision():
-                #data_to_send += ch
+                data_to_send += ch
                 append_status('+')
                 QtWidgets.QApplication.processEvents()
 
