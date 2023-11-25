@@ -60,22 +60,23 @@ def de_bit_staffing(data: str) -> str:
     # return data.replace('000000001', '00000001')
 
 def get_highlighted_bits(data: str) -> str:
-    counter: int = 0
-    highlighted_data: str = ""
-    for i in range(len(data)):
-        if data[i] == "0":
-            counter += 1
-        elif data[i] == "1":
-            counter = 0
-
-        if counter == 8:
-            highlighted_data += "["
-            highlighted_data += data[i]
-            highlighted_data += "]"
-            counter = 0
-        else:
-            highlighted_data += data[i]
-    return highlighted_data[0:-2:1] + ' ' + data[-2::1]
+    # counter: int = 0
+    # highlighted_data: str = ""
+    # for i in range(len(data)):
+    #     if data[i] == "0":
+    #         counter += 1
+    #     elif data[i] == "1":
+    #         counter = 0
+    #
+    #     if counter == 8:
+    #         highlighted_data += "["
+    #         highlighted_data += data[i]
+    #         highlighted_data += "]"
+    #         counter = 0
+    #     else:
+    #         highlighted_data += data[i]
+    # return highlighted_data[0:-2:1] + ' ' + data[-2::1]
+    return data[0:-2:1].replace('000000001', '0000000[0]1') + ' ' + data[-2::1]
 
 
 def divide_str(data: str) -> list[str]:
